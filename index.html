@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>終極版 港幣⇄台幣 換算工具 | 月影代購</title>
+    <style>
+        /* CSS 樣式與之前相同，此處為求簡潔省略，請沿用您現有的 CSS */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        :root { --primary-color: #007bff; --secondary-color: #6c757d; --success-color: #28a745; --danger-color: #dc3545; --light-color: #f8f9fa; --dark-color: #343a40; --bg-color: #f4f7f9; --card-bg: #ffffff; --border-color: #e9ecef; --text-color: #212529; --text-muted: #6c757d; --shadow-color: rgba(0, 0, 0, 0.05); }
+        html[data-theme='dark'] { --primary-color: #3694ff; --bg-color: #121212; --card-bg: #1e1e1e; --border-color: #3a3a3a; --text-color: #e0e0e0; --text-muted: #888888; --light-color: #2c2c2c; --dark-color: #f0f0f0; --shadow-color: rgba(0, 0, 0, 0.2); }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; transition: background-color 0.3s, color 0.3s; }
+        .container { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 25px; }
+        .card { background-color: var(--card-bg); border-radius: 16px; box-shadow: 0 6px 25px var(--shadow-color); padding: 25px; transition: background-color 0.3s, box-shadow 0.3s; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header-content { text-align: left; }
+        .header-content h1 { margin: 0 0 5px 0; font-size: 1.8rem; color: var(--dark-color); }
+        .header-content p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
+        #dark-mode-toggle { background-color: var(--light-color); border: 1px solid var(--border-color); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 1.5rem; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
+        #dark-mode-toggle:hover { background-color: var(--border-color); }
+        .converter-wrapper { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .currency-input { flex: 1; }
+        .currency-input label { font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; display: block; color: var(--dark-color); }
+        .currency-input .input-group { display: flex; }
+        .currency-input .input-group span { padding: 12px; background-color: var(--light-color); border: 1px solid var(--border-color); border-right: none; border-radius: 8px 0 0 8px; font-weight: 700; }
+        .currency-input input { width: 100%; padding: 12px; font-size: 1.1rem; border: 1px solid var(--border-color); border-radius: 0 8px 8px 0; background-color: var(--card-bg); color: var(--text-color); }
+        .currency-input input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+        #swap-btn { background: none; border: 2px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; margin-top: 28px; color: var(--secondary-color); transition: all 0.3s ease; }
+        #swap-btn:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); transform: rotate(180deg); }
+        .rate-section label { display: block; font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; }
+        .rate-info { display: flex; justify-content: space-between; align-items: center; background-color: var(--light-color); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        #rate-value { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); }
+        #last-updated { font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary-color); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #result-card { background-color: var(--light-color); border: 1px solid var(--border-color); }
+        #result-card.over-limit { border-color: var(--danger-color); background-color: rgba(220, 53, 69, 0.05); }
+        #result-details { list-style: none; padding: 0; margin: 0; }
+        #result-details li { display: flex; justify-content: space-between; padding: 12px 0; font-size: 0.95rem; border-bottom: 1px dashed var(--border-color); }
+        #result-details li:last-child { border-bottom: none; }
+        #result-details li span:last-child { font-weight: 700; color: var(--dark-color); }
+        #total-amount-line { padding-top: 15px; margin-top: 10px; border-top: 2px solid var(--border-color); font-size: 1.1rem; font-weight: 700; }
+        #total-amount-line span:first-child { color: var(--primary-color); }
+        #total-amount { font-size: 2rem; color: var(--primary-color); }
+        #alert-msg { color: var(--danger-color); font-weight: 700; text-align: center; padding: 10px; background-color: rgba(220, 53, 69, 0.1); border-radius: 8px; margin-top: 15px; font-size: 0.9rem; line-height: 1.5; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn { padding: 12px; font-size: 1rem; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; width: 100%; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { background-color: var(--light-color); color: var(--dark-color); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: var(--border-color); }
+        .btn-secondary.copied { background-color: var(--success-color); color: white; }
+        .faq-item { border-bottom: 1px solid var(--border-color); }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-question { width: 100%; background: none; border: none; text-align: left; padding: 15px 0; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-question::after { content: '+'; font-size: 1.5rem; transition: transform 0.2s ease; }
+        .faq-item.active .faq-question::after { transform: rotate(45deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; color: var(--text-muted); padding: 0 10px; line-height: 1.6; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-content h2 { margin-top: 0; color: var(--dark-color); }
+        .modal-details { margin: 20px 0; text-align: left; background: var(--light-color); padding: 15px; border-radius: 8px; }
+        .modal-details p { margin: 10px 0; display: flex; justify-content: space-between; }
+        .modal-details strong { color: var(--primary-color); font-size: 1.2rem; }
+        .modal-copy-notice { font-size: 0.85rem; color: var(--text-muted); margin-top: 15px; }
+        .modal-buttons { display: flex; gap: 15px; margin-top: 25px; }
+        .footer { text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+        .footer a { color: var(--primary-color); text-decoration: none; font-weight: 700; }
+        [style*="display: none"] { display: none !important; }
+        @media (max-width: 600px) { body { padding: 10px; align-items: flex-start; } .container { gap: 20px; } .card { padding: 20px; } .header-content h1 { font-size: 1.6rem; } .converter-wrapper { flex-direction: column; gap: 10px; } #swap-btn { transform: rotate(90deg); margin-top: 0; } #swap-btn:hover { transform: rotate(270deg); } }
+    </style>
+</head>
+<body>
+    <!-- HTML 結構與之前相同 -->
+    <div class="container">
+        <div class="card"><div class="header"><div class="header-content"><h1>港幣 ⇄ 台幣 換算</h1><p>由 <a href="#" onclick="return false;">月影代購</a> 提供</p></div><button id="dark-mode-toggle" title="切換模式">🌙</button></div></div>
+        <div class="card"><div class="converter-wrapper"><div class="currency-input" id="hkd-input-section"><label for="hkd-amount">您想兌換的港幣金額 (HKD)</label><div class="input-group"><span>HK$</span><input type="text" id="hkd-amount" inputmode="decimal"></div></div><button id="swap-btn" title="切換幣別">⇄</button><div class="currency-input" id="twd-input-section"><label for="twd-amount">您想支付的台幣金額 (TWD)</label><div class="input-group"><span>NT$</span><input type="text" id="twd-amount" inputmode="decimal"></div></div></div><div class="rate-section" style="margin-top:20px"><label>您的報價匯率 (HKD→TWD)</label><div class="rate-info"><span id="rate-value"></span><div id="spinner-container"></div><span id="last-updated"></span></div></div></div>
+        <div class="card" id="result-card" style="display: none;"><ul id="result-details"><li id="base-amount-li"><span>兌換金額</span><span id="base-amount">NT$ 0</span></li><li id="fee-li"><span>服務手續費</span><span id="fee-amount">NT$ 0</span></li><li id="tax-li"><span>預估營業稅 (1%)</span><span id="tax-amount">NT$ 0</span></li></ul><div id="total-amount-line"><span>總應繳金額</span><span id="total-amount">NT$ 0</span></div><div id="alert-msg" style="display: none;"></div><div class="action-buttons"><button class="btn btn-secondary" id="copy-btn">複製總金額</button><button class="btn btn-secondary" id="clear-btn">清空</button><a href="https://p.ecpay.com.tw/B061283" id="payment-link" target="_blank" rel="noopener noreferrer" style="text-decoration: none; grid-column: 1 / -1;"><button class="btn btn-primary" id="payment-btn">前往代購付款頁面</button></a></div></div>
+        <div class="card"><h2>常見問題 (FAQ)</h2><div class="faq-item"><button class="faq-question">支援哪些付款方式？</button><div class="faq-answer"><p>我們目前支援超商代碼繳費（單筆 6000 元以下）與銀行轉帳。若金額超過 6000 元，系統會引導您使用銀行轉帳或聯繫客服處理。</p></div></div><div class="faq-item"><button class="faq-question">為什麼匯率跟銀行不一樣？</button><div class="faq-answer"><p>我們的報價匯率是基於國際即時匯率，並加上我們的服務匯差與營運成本後所設定的最終價格。</p></div></div></div>
+        <div class="footer"><p>如有疑問，歡迎聯繫 DC: yueying0714</p></div>
+    </div>
+    <div class="modal-overlay" id="confirmation-modal"><div class="modal-content"><h2>請確認付款資訊</h2><div class="modal-details"><p><span>您將支付 (台幣)：</span> <strong id="modal-twd"></strong></p><p><span>您將收到 (港幣)：</span> <strong id="modal-hkd"></strong></p></div><p class="modal-copy-notice">點擊確認後，總金額將自動複製到您的剪貼簿。</p><div class="modal-buttons"><button class="btn btn-secondary" id="cancel-payment-btn">取消</button><button class="btn btn-primary" id="confirm-payment-btn">確認付款</button></div></div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- 配置與 DOM 元素 ---
+    const CONFIG = {
+        backendBaseUrl: '/api', // 使用相對路徑，確保能正確找到後端
+        paymentUrl: 'https://p.ecpay.com.tw/B061283',
+        limit: 6000
+    };
+    const DOMElements = {
+        // ... (與之前相同)
+        hkdAmountInput: document.getElementById('hkd-amount'),
+        twdAmountInput: document.getElementById('twd-amount'),
+        swapBtn: document.getElementById('swap-btn'),
+        resultCard: document.getElementById('result-card'),
+        baseAmountEl: document.getElementById('base-amount'),
+        feeAmountEl: document.getElementById('fee-amount'),
+        taxAmountEl: document.getElementById('tax-amount'),
+        totalAmountEl: document.getElementById('total-amount'),
+        alertMsg: document.getElementById('alert-msg'),
+        paymentBtn: document.getElementById('payment-btn'),
+        copyBtn: document.getElementById('copy-btn'),
+        clearBtn: document.getElementById('clear-btn'),
+        rateValueEl: document.getElementById('rate-value'),
+        spinnerContainer: document.getElementById('spinner-container'),
+        lastUpdatedEl: document.getElementById('last-updated'),
+        darkModeToggle: document.getElementById('dark-mode-toggle'),
+        confirmationModal: document.getElementById('confirmation-modal'),
+        modalTwdEl: document.getElementById('modal-twd'),
+        modalHkdEl: document.getElementById('modal-hkd'),
+        confirmPaymentBtn: document.getElementById('confirm-payment-btn'),
+        cancelPaymentBtn: document.getElementById('cancel-payment-btn'),
+    };
+    let state = { isHkdToTwd: true, lastCalculatedHkd: 0, lastCalculatedTwd: 0, isCalculating: false };
+
+    // --- 輔助函式 (與之前相同) ---
+    const formatDateTime = dateStr => { const d = new Date(dateStr); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`; };
+    const formatNumberWithCommas = numStr => String(numStr).replace(/,/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const parseFormattedNumber = numStr => parseFloat(String(numStr).replace(/,/g, '')) || 0;
+    const animateCounter = (element, start, end, duration = 500) => { let startTime = null; const step = timestamp => { if (!startTime) startTime = timestamp; const progress = Math.min((timestamp - startTime) / duration, 1); element.textContent = `NT$ ${Math.floor(progress * (end - start) + start).toLocaleString()}`; if (progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); };
+    const copyToClipboard = (text, buttonElement) => { navigator.clipboard.writeText(text).then(() => { const originalHTML = buttonElement.innerHTML; buttonElement.innerHTML = '&#10003; 已複製'; buttonElement.classList.add('copied'); setTimeout(() => { buttonElement.innerHTML = originalHTML; buttonElement.classList.remove('copied'); }, 1500); }).catch(err => console.error('複製失敗: ', err)); };
+
+    // --- 核心請求函式 ---
+    const fetchCalculationResult = async (amount, direction) => {
+        if (state.isCalculating) return null;
+        state.isCalculating = true;
+        DOMElements.spinnerContainer.innerHTML = '<div class="spinner"></div>';
+        try {
+            const response = await fetch(`${CONFIG.backendBaseUrl}/calculate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount, direction }) });
+            if (!response.ok) throw new Error('後端伺服器回應錯誤');
+            return await response.json();
+        } finally {
+            state.isCalculating = false;
+            DOMElements.spinnerContainer.innerHTML = '';
+        }
+    };
+    
+    const fetchInitialRate = async () => {
+        DOMElements.spinnerContainer.innerHTML = '<div class="spinner"></div>';
+        try {
+            const response = await fetch(`${CONFIG.backendBaseUrl}/rate`);
+            if (!response.ok) throw new Error('後端伺服器回應錯誤');
+            const result = await response.json();
+            DOMElements.rateValueEl.textContent = result.quoteRate.toFixed(4);
+            DOMElements.lastUpdatedEl.innerHTML = `API即時: ${result.apiRate.toFixed(4)}<br>更新於: ${formatDateTime(result.lastUpdated)}`;
+        } catch (error) {
+            console.error('獲取初始匯率失敗:', error);
+            DOMElements.rateValueEl.textContent = '錯誤';
+            DOMElements.lastUpdatedEl.textContent = '(無法連接後端)';
+        } finally {
+            DOMElements.spinnerContainer.innerHTML = '';
+        }
+    };
+    
+    const calculate = async () => {
+        const amount = state.isHkdToTwd ? parseFormattedNumber(DOMElements.hkdAmountInput.value) : parseFormattedNumber(DOMElements.twdAmountInput.value);
+        if (amount <= 0) { hideResult(); return; }
+        const result = await fetchCalculationResult(amount, state.isHkdToTwd ? 'hkdToTwd' : 'twdToHkd');
+        if (result) updateUIWithResult(result);
+    };
+
+    // --- UI 更新 (與之前相同) ---
+    const updateUIWithResult = (result) => {
+        const { finalTwd, finalHkd, baseTwd, fee, tax, quoteRate, apiRate, lastUpdated } = result;
+        DOMElements.rateValueEl.textContent = quoteRate.toFixed(4);
+        DOMElements.lastUpdatedEl.innerHTML = `API即時: ${apiRate.toFixed(4)}<br>更新於: ${formatDateTime(lastUpdated)}`;
+        if (state.isHkdToTwd) DOMElements.twdAmountInput.value = formatNumberWithCommas(finalTwd); else DOMElements.hkdAmountInput.value = formatNumberWithCommas(finalHkd);
+        state.lastCalculatedTwd = finalTwd; state.lastCalculatedHkd = finalHkd;
+        DOMElements.baseAmountEl.textContent = `NT$ ${baseTwd.toLocaleString()}`;
+        DOMElements.feeAmountEl.textContent = `NT$ ${fee.toLocaleString()}`;
+        DOMElements.taxAmountEl.textContent = `NT$ ${tax.toLocaleString()}`;
+        const currentTotal = parseFormattedNumber(DOMElements.totalAmountEl.textContent.replace('NT$ ', ''));
+        animateCounter(DOMElements.totalAmountEl, currentTotal, finalTwd);
+        if (finalTwd > CONFIG.limit) {
+            DOMElements.resultCard.classList.add('over-limit');
+            DOMElements.alertMsg.innerHTML = '⚠️ 金額超過 6000 元，超商無法付款。<br>請點擊下方按鈕，並於付款頁面選擇【銀行轉帳】。';
+            DOMElements.alertMsg.style.display = 'block';
+            DOMElements.paymentBtn.textContent = '前往付款 (請使用銀行轉帳)';
+        } else {
+            DOMElements.resultCard.classList.remove('over-limit');
+            DOMElements.alertMsg.style.display = 'none';
+            DOMElements.paymentBtn.textContent = '前往代購付款頁面';
+        }
+        DOMElements.resultCard.style.display = 'block';
+    };
+    const hideResult = () => { DOMElements.resultCard.style.display = 'none'; };
+    const toggleDirection = () => {
+        state.isHkdToTwd = !state.isHkdToTwd;
+        DOMElements.hkdAmountInput.value = ''; DOMElements.twdAmountInput.value = ''; hideResult();
+        const { hkdAmountInput, twdAmountInput } = DOMElements;
+        const hkdSection = hkdAmountInput.parentElement.parentElement;
+        const twdSection = twdAmountInput.parentElement.parentElement;
+        if (state.isHkdToTwd) {
+            hkdAmountInput.readOnly = false; twdAmountInput.readOnly = true;
+            hkdSection.style.opacity = 1; twdSection.style.opacity = 0.5;
+        } else {
+            hkdAmountInput.readOnly = true; twdAmountInput.readOnly = false;
+            hkdSection.style.opacity = 0.5; twdSection.style.opacity = 1;
+        }
+    };
+
+    // --- 事件監聽 (與之前相同) ---
+    [DOMElements.hkdAmountInput, DOMElements.twdAmountInput].forEach(input => {
+        let debounceTimer;
+        input.addEventListener('input', e => { const val = e.target.value.replace(/[^\d]/g, ''); e.target.value = formatNumberWithCommas(val); clearTimeout(debounceTimer); debounceTimer = setTimeout(calculate, 300); });
+        input.addEventListener('focus', e => { if (e.target.id === 'hkd-amount' && !state.isHkdToTwd) toggleDirection(); if (e.target.id === 'twd-amount' && state.isHkdToTwd) toggleDirection(); });
+    });
+    DOMElements.swapBtn.addEventListener('click', toggleDirection);
+    DOMElements.clearBtn.addEventListener('click', () => { DOMElements.hkdAmountInput.value = ''; DOMElements.twdAmountInput.value = ''; DOMElements.totalAmountEl.textContent = 'NT$ 0'; hideResult(); });
+    DOMElements.copyBtn.addEventListener('click', e => { copyToClipboard(state.lastCalculatedTwd, e.currentTarget); });
+    DOMElements.paymentBtn.addEventListener('click', () => { DOMElements.modalTwdEl.textContent = `NT$ ${state.lastCalculatedTwd.toLocaleString()}`; DOMElements.modalHkdEl.textContent = `HK$ ${state.lastCalculatedHkd.toLocaleString()}`; DOMElements.confirmationModal.style.display = 'flex'; });
+    DOMElements.cancelPaymentBtn.addEventListener('click', () => { DOMElements.confirmationModal.style.display = 'none'; });
+    DOMElements.confirmPaymentBtn.addEventListener('click', e => { copyToClipboard(state.lastCalculatedTwd, e.currentTarget); window.open(CONFIG.paymentUrl, '_blank'); setTimeout(() => { DOMElements.confirmationModal.style.display = 'none'; }, 500); });
+    DOMElements.darkModeToggle.addEventListener('click', () => { const currentTheme = document.documentElement.getAttribute('data-theme'); const newTheme = currentTheme === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', newTheme); DOMElements.darkModeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙'; localStorage.setItem('theme', newTheme); });
+    document.querySelectorAll('.faq-question').forEach(button => { button.addEventListener('click', () => { const faqItem = button.parentElement; faqItem.classList.toggle('active'); const answer = faqItem.querySelector('.faq-answer'); answer.style.maxHeight = faqItem.classList.contains('active') ? answer.scrollHeight + "px" : 0; }); });
+
+    // --- 初始化 ---
+    function initializeApp() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        DOMElements.darkModeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        toggleDirection();
+        toggleDirection();
+        fetchInitialRate();
+    }
+    initializeApp();
+});
+</script>
+</body>
+</html>
